@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LinkMap — 데스크톱 시연</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Segoe UI', sans-serif;
+    overflow: hidden;
+  }
+
+  /* 배경 장식 */
+  .bg-circle {
+    position: fixed; border-radius: 50%; pointer-events: none;
+    background: radial-gradient(circle, rgba(232,90,0,.12) 0%, transparent 70%);
+  }
+  .bg-circle-1 { width: 600px; height: 600px; top: -200px; right: -150px; }
+  .bg-circle-2 { width: 400px; height: 400px; bottom: -100px; left: -100px; }
+
+  /* 전체 레이아웃 */
+  .scene {
+    position: relative;
+    display: flex; align-items: center; gap: 60px;
+  }
+
+  /* 왼쪽 텍스트 */
+  .side-text {
+    color: #fff; max-width: 280px;
+  }
+  .side-logo {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 28px;
+  }
+  .side-logo-ic {
+    width: 52px; height: 52px; border-radius: 15px;
+    background: linear-gradient(135deg, #FF8040, #C44400);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    box-shadow: 0 8px 24px rgba(232,90,0,.4);
+  }
+  .side-logo-name {
+    font-size: 28px; font-weight: 800;
+    background: linear-gradient(135deg, #FF8040, #FFB080);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .side-title {
+    font-size: 22px; font-weight: 700; line-height: 1.5;
+    color: #fff; margin-bottom: 14px;
+  }
+  .side-desc {
+    font-size: 14px; color: rgba(255,255,255,.6); line-height: 1.8;
+    margin-bottom: 28px;
+  }
+  .side-features { display: flex; flex-direction: column; gap: 10px; }
+  .side-feat {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: rgba(255,255,255,.75);
+  }
+  .side-feat-ic {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: rgba(232,90,0,.2); border: 1px solid rgba(232,90,0,.3);
+    display: flex; align-items: center; justify-content: center; font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  /* 폰 프레임 */
+  .phone-wrap {
+    position: relative; flex-shrink: 0;
+  }
+  .phone-frame {
+    position: relative;
+    width: 375px; height: 780px;
+    background: #1a1a1a;
+    border-radius: 52px;
+    padding: 14px;
+    box-shadow:
+      0 0 0 2px #333,
+      0 0 0 4px #111,
+      0 40px 80px rgba(0,0,0,.6),
+      0 20px 40px rgba(0,0,0,.4),
+      inset 0 0 0 1px rgba(255,255,255,.08);
+  }
+
+  /* 노치 */
+  .phone-notch {
+    position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+    width: 120px; height: 32px;
+    background: #1a1a1a; border-radius: 0 0 20px 20px;
+    z-index: 10;
+    box-shadow: inset 0 -2px 4px rgba(0,0,0,.3);
+  }
+  .phone-notch::before {
+    content: ''; position: absolute;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #222; top: 8px; right: 28px;
+    box-shadow: inset 0 0 3px rgba(0,0,0,.5);
+  }
+
+  /* 사이드 버튼 */
+  .phone-btn-right {
+    position: absolute; right: -4px; top: 160px;
+    width: 4px; height: 60px; background: #333; border-radius: 2px;
+  }
+  .phone-btn-left-1 {
+    position: absolute; left: -4px; top: 130px;
+    width: 4px; height: 36px; background: #333; border-radius: 2px;
+  }
+  .phone-btn-left-2 {
+    position: absolute; left: -4px; top: 180px;
+    width: 4px; height: 64px; background: #333; border-radius: 2px;
+  }
+  .phone-btn-left-3 {
+    position: absolute; left: -4px; top: 256px;
+    width: 4px; height: 64px; background: #333; border-radius: 2px;
+  }
+
+  /* 스크린 */
+  .phone-screen {
+    width: 100%; height: 100%;
+    border-radius: 40px;
+    overflow: hidden;
+    background: #F5F0EB;
+    position: relative;
+  }
+  .phone-screen iframe {
+    width: 100%; height: 100%;
+    border: none; display: block;
+  }
+
+  /* 홈 인디케이터 */
+  .phone-home {
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    width: 120px; height: 5px; background: rgba(255,255,255,.3);
+    border-radius: 3px; z-index: 10; pointer-events: none;
+  }
+
+  /* 반짝임 효과 */
+  .phone-shine {
+    position: absolute; inset: 14px;
+    border-radius: 40px; pointer-events: none; z-index: 20;
+    background: linear-gradient(
+      135deg,
+      rgba(255,255,255,.06) 0%,
+      transparent 50%
+    );
+  }
+
+  /* 하단 힌트 */
+  .hint {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    font-size: 12px; color: rgba(255,255,255,.35);
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<div class="scene">
+
+  <!-- 왼쪽 소개 텍스트 -->
+  <div class="side-text">
+    <div class="side-logo">
+      <div class="side-logo-ic">🔗</div>
+      <div class="side-logo-name">LinkMap</div>
+    </div>
+    <div class="side-title">보험설계사를 위한<br>소개 연결망 관리 앱</div>
+    <div class="side-desc">누가 누구를 소개했는지 시각화하고,<br>관계 온도 기반으로 오늘 연락할<br>1명을 자동으로 추천합니다.</div>
+    <div class="side-features">
+      <div class="side-feat"><div class="side-feat-ic">🌡</div>관계 온도 자동 계산</div>
+      <div class="side-feat"><div class="side-feat-ic">🔗</div>소개 연결망 시각화</div>
+      <div class="side-feat"><div class="side-feat-ic">⭐</div>허브 고객 자동 감지</div>
+      <div class="side-feat"><div class="side-feat-ic">📅</div>미팅 일정 + 파이프라인</div>
+      <div class="side-feat"><div class="side-feat-ic">🤝</div>소개 요청 결과 기록</div>
+    </div>
+  </div>
+
+  <!-- 폰 프레임 -->
+  <div class="phone-wrap">
+    <div class="phone-frame">
+      <div class="phone-notch"></div>
+      <div class="phone-btn-right"></div>
+      <div class="phone-btn-left-1"></div>
+      <div class="phone-btn-left-2"></div>
+      <div class="phone-btn-left-3"></div>
+      <div class="phone-screen">
+        <iframe src="index.html" title="LinkMap"></iframe>
+      </div>
+      <div class="phone-shine"></div>
+      <div class="phone-home"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="hint">PC 시연용 화면 · 실제 앱은 모바일에서 사용하세요</div>
+
+</body>
+</html>

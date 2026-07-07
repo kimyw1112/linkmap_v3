@@ -1,0 +1,14 @@
+{
+  "name": "LinkMap",
+  "short_name": "LinkMap",
+  "description": "나의 소개 연결망 관리 앱",
+  "display": "standalone",
+  "orientation": "portrait",
+  "start_url": "./index.html",
+  "scope": "./",
+  "background_color": "#FFF4EE",
+  "theme_color": "#E85A00",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#E85A00">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="LinkMap">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<title>LinkMap</title>
+<link rel="stylesheet" href="style.css">
+<script>
+(function(){
+  const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  const isFrame  = window.self !== window.top;
+  if(!isMobile && !isFrame){
+    window.location.replace('desktop.html');
+  }
+})();
+</script>
+<style>
+/* ─── 로그인 전용 ─────────────────────────────────────────────── */
+html { height:100%; }
+body {
+  min-height:100dvh; overflow-y:auto;
+  background:#F5F0EB;
+  display:flex; align-items:center; justify-content:center;
+  padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  position:relative;
+}
+
+/* 배경 장식 */
+.bg-blob {
+  position:fixed; border-radius:50%; pointer-events:none; z-index:0; will-change:transform;
+}
+.bg-blob-1 {
+  width:420px; height:420px;
+  background:radial-gradient(circle, rgba(255,112,48,.22) 0%, transparent 68%);
+  top:-120px; right:-120px;
+}
+.bg-blob-2 {
+  width:320px; height:320px;
+  background:radial-gradient(circle, rgba(232,90,0,.14) 0%, transparent 68%);
+  bottom:-60px; left:-80px;
+}
+.bg-blob-3 {
+  width:200px; height:200px;
+  background:radial-gradient(circle, rgba(255,180,120,.12) 0%, transparent 68%);
+  top:40%; left:50%; transform:translate(-50%,-50%);
+}
+
+/* 컨테이너 */
+.page {
+  position:relative; z-index:1;
+  width:100%; max-width:420px;
+  padding:24px 22px calc(32px + env(safe-area-inset-bottom));
+  display:flex; flex-direction:column; align-items:center;
+}
+
+/* ─── 로고 ───────────────────────────────────────────────────── */
+.logo-wrap { display:flex; flex-direction:column; align-items:center; margin-bottom:36px; }
+.logo-badge {
+  position:relative; margin-bottom:18px;
+}
+.logo-badge-bg {
+  width:90px; height:90px; border-radius:26px;
+  background:linear-gradient(145deg, #FF8040, #D44800);
+  display:flex; align-items:center; justify-content:center; font-size:46px;
+  box-shadow:
+    0 14px 40px rgba(232,90,0,.40),
+    0  4px 14px rgba(232,90,0,.22),
+    inset 0 1px 1px rgba(255,255,255,.25);
+}
+.logo-badge-ring {
+  position:absolute; inset:-5px; border-radius:31px;
+  border:2px solid rgba(232,90,0,.22);
+  animation:pulse 3s ease-in-out infinite;
+}
+.logo-badge-ring2 {
+  position:absolute; inset:-11px; border-radius:37px;
+  border:1.5px solid rgba(232,90,0,.10);
+  animation:pulse 3s ease-in-out .8s infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity:.35; transform:scale(1); }
+  50%      { opacity:.85; transform:scale(1.05); }
+}
+.logo-name {
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:32px; font-weight:800; color:var(--brand); letter-spacing:-.6px; line-height:1;
+}
+.logo-tagline { font-size:13px; color:var(--txt3); margin-top:6px; letter-spacing:.1px; }
+
+/* ─── 카드 ───────────────────────────────────────────────────── */
+.card {
+  width:100%;
+  background:#fff;
+  border-radius:26px;
+  padding:30px 26px 26px;
+  box-shadow:
+    0 2px 4px rgba(100,60,20,.04),
+    0 8px 24px rgba(100,60,20,.08),
+    0 24px 56px rgba(100,60,20,.10);
+  border:1px solid rgba(228,217,208,.5);
+}
+
+/* 카드 상단 구분선 + 제목 */
+.card-label {
+  display:flex; align-items:center; gap:10px;
+  margin-bottom:24px;
+}
+.card-label::before,
+.card-label::after {
+  content:''; flex:1; height:1px; background:var(--border2);
+}
+.card-label span {
+  font-size:11px; font-weight:700; color:var(--txt3);
+  letter-spacing:1.2px; text-transform:uppercase; white-space:nowrap;
+}
+
+/* ─── 플로팅 라벨 필드 ───────────────────────────────────────── */
+.ff { position:relative; margin-bottom:14px; }
+
+.ff input {
+  width:100%; height:62px;
+  padding:24px 48px 8px 16px;
+  background:#FAF7F4;
+  border:1.5px solid var(--border);
+  border-radius:16px;
+  outline:none; color:var(--txt);
+  font-size:16px;
+  transition:border-color .2s, background .2s, box-shadow .2s;
+  -webkit-appearance:none;
+}
+.ff input:focus {
+  border-color:var(--brand);
+  background:#fff;
+  box-shadow:0 0 0 4px rgba(232,90,0,.08);
+}
+/* 채워진 상태 */
+.ff input:not(:placeholder-shown) {
+  border-color:rgba(232,90,0,.4);
+}
+
+/* 라벨 기본 위치 = 세로 중앙 */
+.ff label {
+  position:absolute; left:16px; top:50%;
+  transform:translateY(-50%);
+  font-size:15px; color:var(--txt3); font-weight:500;
+  transition:all .18s ease; pointer-events:none;
+  letter-spacing:.05px;
+}
+/* 포커스 or 값 있을 때 위로 이동 */
+.ff input:focus + label,
+.ff input:not(:placeholder-shown) + label {
+  top:11px; transform:none;
+  font-size:10.5px; font-weight:700;
+  color:var(--brand); letter-spacing:.6px; text-transform:uppercase;
+}
+
+/* 아이콘 */
+.ff .fi {
+  position:absolute; right:16px; top:50%; transform:translateY(-50%);
+  font-size:18px; opacity:.38; pointer-events:none;
+  transition:opacity .18s;
+}
+.ff input:focus ~ .fi,
+.ff input:not(:placeholder-shown) ~ .fi {
+  opacity:.65;
+}
+
+/* ─── 시작하기 버튼 ──────────────────────────────────────────── */
+.login-btn {
+  width:100%; height:60px; margin-top:4px;
+  background:linear-gradient(135deg, #FF8040, #C44400);
+  color:#fff; font-size:17px; font-weight:700;
+  border-radius:16px; border:none; cursor:pointer;
+  box-shadow:0 6px 24px rgba(232,90,0,.35), inset 0 1px 1px rgba(255,255,255,.2);
+  transition:opacity .15s, transform .12s, box-shadow .15s;
+  display:flex; align-items:center; justify-content:center; gap:9px;
+  letter-spacing:.1px;
+}
+.login-btn:active {
+  opacity:.88; transform:scale(.98);
+  box-shadow:0 3px 12px rgba(232,90,0,.3);
+}
+.login-btn-arrow {
+  width:26px; height:26px; border-radius:50%;
+  background:rgba(255,255,255,.22);
+  display:flex; align-items:center; justify-content:center;
+  font-size:15px;
+}
+
+/* ─── 기능 미리보기 태그 ─────────────────────────────────────── */
+.feature-tags {
+  display:flex; flex-wrap:wrap; gap:8px; justify-content:center;
+  margin-bottom:24px;
+}
+.ftag {
+  display:flex; align-items:center; gap:5px;
+  background:var(--brand-pale); border:1px solid rgba(232,90,0,.18);
+  border-radius:20px; padding:5px 12px;
+  font-size:12px; font-weight:600; color:var(--brand2);
+}
+
+/* ─── 안내 ───────────────────────────────────────────────────── */
+.notice {
+  font-size:11.5px; color:var(--txt3); text-align:center;
+  margin-top:16px; line-height:1.7; padding-top:14px;
+  border-top:1px solid var(--border2);
+}
+.notice b { color:var(--amber); }
+
+/* ─── 홈화면 추가 버튼 ───────────────────────────────────────── */
+.home-btn {
+  display:flex; align-items:center; justify-content:center; gap:9px;
+  width:100%; margin-top:14px; padding:14px 16px;
+  border-radius:18px;
+  border:1.5px solid rgba(232,90,0,.22);
+  background:rgba(255,240,232,.75);
+  color:var(--brand); font-size:13.5px; font-weight:600;
+  cursor:pointer; transition:all .15s; backdrop-filter:blur(4px);
+}
+.home-btn:active { background:rgba(232,90,0,.12); border-color:var(--brand); }
+
+/* ─── 홈화면 안내 모달 ───────────────────────────────────────── */
+.hw-back {
+  position:fixed; inset:0; background:rgba(60,30,10,.5);
+  z-index:100; display:flex; align-items:flex-end; justify-content:center;
+  backdrop-filter:blur(5px);
+}
+.hw-back.hide { display:none; }
+.hw-sheet {
+  width:100%; max-width:480px; background:#fff;
+  border-radius:26px 26px 0 0; border-top:2px solid var(--brand);
+  padding-bottom:calc(28px + env(safe-area-inset-bottom));
+  animation:suUp .3s cubic-bezier(.32,.72,0,1);
+}
+@keyframes suUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.hw-handle  { width:40px; height:4px; background:var(--border); border-radius:2px; margin:12px auto 0; }
+.hw-head    { display:flex; align-items:center; justify-content:space-between; padding:14px 20px 0; }
+.hw-head h3 { font-family:var(--display); font-size:17px; font-weight:700; color:var(--brand); }
+.hw-x       { width:32px; height:32px; border-radius:9px; background:var(--brand-pale); color:var(--brand); border:1px solid var(--border); font-size:16px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+.hw-body    { padding:16px 20px 0; }
+.hw-os      { font-size:11px; font-weight:700; color:var(--txt3); letter-spacing:.8px; text-transform:uppercase; margin-bottom:14px; }
+.hw-step    { display:flex; gap:12px; margin-bottom:13px; align-items:flex-start; }
+.hw-n       { width:26px; height:26px; border-radius:50%; flex-shrink:0; background:var(--brand); color:#fff; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; margin-top:2px; }
+.hw-step p  { font-size:14px; color:var(--txt); line-height:1.7; }
+.hw-step p b    { color:var(--brand); font-weight:700; }
+.hw-step p code { background:var(--brand-pale); border:1px solid rgba(232,90,0,.22); border-radius:6px; padding:1px 8px; font-size:13px; color:var(--brand); font-family:var(--font); display:inline-block; }
+.hw-tip { background:var(--brand-pale); border:1px solid rgba(232,90,0,.18); border-radius:12px; padding:12px 14px; margin-top:4px; font-size:12px; color:var(--brand2); line-height:1.7; }
+</style>
+</head>
+<body>
+
+<div class="bg-blob bg-blob-1"></div>
+<div class="bg-blob bg-blob-2"></div>
+<div class="bg-blob bg-blob-3"></div>
+
+<div class="page">
+
+  <!-- 로고 -->
+  <div class="logo-wrap">
+    <div class="logo-badge">
+      <div class="logo-badge-bg">🔗</div>
+      <div class="logo-badge-ring"></div>
+      <div class="logo-badge-ring2"></div>
+    </div>
+    <div class="logo-name">LinkMap</div>
+    <div class="logo-tagline">나의 소개 연결망 관리 앱</div>
+  </div>
+
+  <!-- 카드 -->
+  <div class="card">
+    <div class="card-label"><span>LinkMap 소개</span></div>
+
+    <!-- 기능 미리보기 태그 -->
+    <div class="feature-tags">
+      <span class="ftag">🕸 소개 연결망 시각화</span>
+      <span class="ftag">⭐ 허브 고객 자동 감지</span>
+      <span class="ftag">🔔 연락 타이밍 알림</span>
+      <span class="ftag">📅 미팅 일정 관리</span>
+      <span class="ftag">💬 오프닝 스크립트</span>
+      <span class="ftag">📊 Excel 백업</span>
+    </div>
+
+    <button class="login-btn" id="btnLogin">
+      시작하기
+      <span class="login-btn-arrow">→</span>
+    </button>
+
+    <div class="notice">
+      <b>⚠ 안내</b><br>
+      데이터는 이 기기의 브라우저에만 저장됩니다.<br>
+      민감정보(주민번호·연락처·계약금액)는 입력하지 마세요.
+    </div>
+  </div>
+
+  <!-- 홈화면 추가 버튼 -->
+  <button class="home-btn" id="btnHome">
+    <span id="homeIc">📲</span>
+    <span id="homeTxt">홈화면에 추가하는 방법</span>
+  </button>
+
+</div><!-- .page -->
+
+<!-- 홈화면 안내 모달 -->
+<div class="hw-back hide" id="hwBack">
+  <div class="hw-sheet">
+    <div class="hw-handle"></div>
+    <div class="hw-head">
+      <h3 id="hwTitle">홈화면에 추가하기</h3>
+      <button class="hw-x" id="hwX">✕</button>
+    </div>
+    <div class="hw-body" id="hwBody"></div>
+  </div>
+</div>
+
+<script>
+/* ─── 세션 키 ─── */
+const SESSION_KEY = 'lm_session';
+
+/* ─── 시작하기 ─── */
+function tryLogin() {
+  /* 고정 세션 — 이름·사번 없이 단일 저장소 사용 */
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ name: 'FP', emp: 'default' }));
+  window.location.href = 'app.html';
+}
+document.getElementById('btnLogin').addEventListener('click', tryLogin);
+
+/* ─── 세션 자동 복원 없음 — 항상 시작 화면을 거쳐야 진입 가능 ─── */
+try { localStorage.removeItem(SESSION_KEY); } catch(e) {}
+
+/* ─── 홈화면 안내 ─── */
+const ua = navigator.userAgent;
+const GUIDES = {
+  ios:{
+    title:'아이폰 홈화면에 추가하기', ic:'🍎', txt:'아이폰 홈화면에 추가하는 방법', os:'🍎  iOS · Safari',
+    steps:[
+      {t:'<b>Safari</b> 브라우저로 이 페이지를 여세요.<br>크롬·네이버 앱으로는 추가할 수 없습니다.'},
+      {t:'화면 아래 가운데 <b>공유 버튼 ⎙</b> 을 탭하세요.'},
+      {t:'목록에서 <code>홈 화면에 추가</code> 를 탭하세요.'},
+      {t:'오른쪽 위 <b>추가</b> 버튼을 탭하면 완료!'},
+    ],
+    tip:'💡 홈화면 아이콘을 탭하면 주소창 없이 앱처럼 실행됩니다.'
+  },
+  android:{
+    title:'안드로이드 홈화면에 추가하기', ic:'🤖', txt:'안드로이드 홈화면에 추가하는 방법', os:'🤖  Android · Chrome',
+    steps:[
+      {t:'<b>Chrome</b> 브라우저로 이 페이지를 여세요.'},
+      {t:'오른쪽 위 <b>메뉴(⋮)</b> 버튼을 탭하세요.'},
+      {t:'<code>홈 화면에 추가</code> 또는 <code>앱 설치</code> 를 탭하세요.'},
+      {t:'<b>추가</b> 버튼을 탭하면 완료!'},
+    ],
+    tip:'💡 삼성 인터넷: 메뉴(☰) → 홈 화면에 추가.'
+  },
+  etc:{
+    title:'홈화면에 추가하기', ic:'📲', txt:'홈화면에 추가하는 방법', os:'📱  공통 안내',
+    steps:[
+      {t:'<b>아이폰</b>: Safari → 공유 ⎙ → <code>홈 화면에 추가</code>'},
+      {t:'<b>안드로이드</b>: Chrome → 메뉴 ⋮ → <code>홈 화면에 추가</code>'},
+    ],
+    tip:'💡 홈화면에 추가하면 주소창 없이 앱처럼 사용할 수 있습니다.'
+  }
+};
+const g = /iPhone|iPad|iPod/i.test(ua) ? GUIDES.ios
+        : /Android/i.test(ua)           ? GUIDES.android : GUIDES.etc;
+
+document.getElementById('homeIc').textContent  = g.ic;
+document.getElementById('homeTxt').textContent = g.txt;
+document.getElementById('hwTitle').textContent = g.title;
+document.getElementById('hwBody').innerHTML =
+  `<div class="hw-os">${g.os}</div>` +
+  g.steps.map((s,i)=>`<div class="hw-step"><div class="hw-n">${i+1}</div><p>${s.t}</p></div>`).join('') +
+  `<div class="hw-tip">${g.tip}</div>`;
+
+document.getElementById('btnHome').addEventListener('click', () => document.getElementById('hwBack').classList.remove('hide'));
+document.getElementById('hwX').addEventListener('click',    () => document.getElementById('hwBack').classList.add('hide'));
+document.getElementById('hwBack').addEventListener('click', e => { if (e.target===e.currentTarget) document.getElementById('hwBack').classList.add('hide'); });
+</script>
+</body>
+</html>
