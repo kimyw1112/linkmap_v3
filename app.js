@@ -1251,6 +1251,7 @@ function buildAlerts(threshold){
 }
 
 function renderAlerts(){
+  syncAlertButtons();               // 저장된 기준일에 맞게 버튼/입력칸 상태 반영
   const thr=alertThreshold;
   const items=buildAlerts(thr),box=document.getElementById('alertBody');
   if(!items.length){
@@ -1297,24 +1298,24 @@ function renderAlerts(){
 /* ─── 알림 필터 버튼 이벤트 ─── */
 document.getElementById('alertFilterRow').addEventListener('click', e=>{
   const btn = e.target.closest('.af-btn'); if(!btn) return;
-  document.querySelectorAll('.af-btn').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
   const customWrap = document.getElementById('afCustomWrap');
   if(btn.dataset.d==='custom'){
+    /* 직접입력: 값 확정 전까지는 아직 적용하지 않고 입력칸만 노출 */
+    document.querySelectorAll('.af-btn').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
     customWrap.classList.remove('hide');
-    document.getElementById('afCustomInput').focus();
+    const inp=document.getElementById('afCustomInput');
+    inp.value = inp.value || alertThreshold;   // 현재 값 미리 채움
+    inp.focus();
   } else {
-    customWrap.classList.add('hide');
-    alertThreshold = +btn.dataset.d;
-    renderAlerts(); renderTodayDash();
+    setAlertThreshold(+btn.dataset.d);          // 30일 등 즉시 적용·저장
   }
 });
 document.getElementById('afApply').addEventListener('click', ()=>{
   const v = parseInt(document.getElementById('afCustomInput').value);
   if(!v||v<1){toast('올바른 일 수를 입력하세요','⚠');return;}
-  alertThreshold = v;
-  renderAlerts(); renderTodayDash();
-  toast(`기준일 ${v}일로 변경됐습니다`,'🔔');
+  setAlertThreshold(v);                          // 기본 기준일로 저장 + 실시간 반영
+  toast(`기본 기준일이 ${v}일로 설정됐습니다`,'🔔');
 });
 document.getElementById('afCustomInput').addEventListener('keydown', e=>{
   if(e.key==='Enter') document.getElementById('afApply').click();
@@ -1325,7 +1326,39 @@ document.getElementById('afCustomInput').addEventListener('keydown', e=>{
    일정 (SCHEDULE) — localStorage에 사번별 저장
 ═══════════════════════════════════════════════════════════ */
 /* ─── 알림 기준일 설정 ─── */
-let alertThreshold = 10;  // 기본 10일
+/* 사번별 저장 키 (세션 emp 기준, PUSH_KEY 패턴과 동일) */
+const THR_KEY = 'lm_alert_thr_'+((()=>{try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'{}').emp||'x';}catch{return 'x';}})());
+/* 저장된 값 있으면 복원, 없으면 기본 30일 */
+let alertThreshold = (()=>{ const v=parseInt(localStorage.getItem(THR_KEY)); return (v && v>0) ? v : 30; })();  // 기본 30일
+
+/* 기준일 변경 + 영속화 + 관계온도 실시간 반영 */
+function setAlertThreshold(v){
+  alertThreshold = v;
+  try{ localStorage.setItem(THR_KEY, String(v)); }catch(e){}
+  syncAlertButtons();
+  renderAlerts();        // 알림 목록
+  renderList();          // 인맥 목록 관계온도
+  renderTodayDash();     // 오늘 할 일(온도 기반 추천)
+}
+
+/* 현재 alertThreshold 값에 맞게 버튼/입력칸 상태 동기화 */
+function syncAlertButtons(){
+  const row=document.getElementById('alertFilterRow');
+  const customWrap=document.getElementById('afCustomWrap');
+  const inp=document.getElementById('afCustomInput');
+  if(!row) return;
+  row.querySelectorAll('.af-btn').forEach(b=>b.classList.remove('on'));
+  const preset=row.querySelector('.af-btn[data-d="'+alertThreshold+'"]');
+  if(preset){                      // 30일 등 프리셋과 일치
+    preset.classList.add('on');
+    if(customWrap) customWrap.classList.add('hide');
+  } else {                         // 직접입력 값
+    const cb=row.querySelector('.af-btn[data-d="custom"]');
+    if(cb) cb.classList.add('on');
+    if(customWrap) customWrap.classList.remove('hide');
+    if(inp) inp.value = alertThreshold;
+  }
+}
 
 let SCHEDS = [];   // [{ id, date:'YYYY-MM-DD', time:'HH:MM'|'', title, personId|null, memo }]
 

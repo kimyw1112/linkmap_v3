@@ -7,7 +7,7 @@
    ─ 쿼리스트링은 무시하고 경로만으로 캐시 매칭
    ─ 캐시 버전 올리면 이전 캐시 자동 파기
 ════════════════════════════════════════════════════════════ */
-const CACHE_NAME = 'linkmap-v7';
+const CACHE_NAME = 'linkmap-v8';
 const ASSETS = [
   './',
   './index.html',

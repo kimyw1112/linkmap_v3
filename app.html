@@ -318,15 +318,13 @@
     </div>
     <!-- 알림 기준일 설정 -->
     <div class="alert-filter-wrap">
-      <div class="alert-filter-label">연락 기준일 설정 — 마지막 접촉 후 며칠 지나면 알림?</div>
+      <div class="alert-filter-label">연락 기준일 설정 — 마지막 접촉 후 며칠 지나면 알림?<br><span style="font-size:11px;color:var(--txt3);font-weight:500">이 기준일은 <b>관계 온도</b> 계산에도 실시간 반영됩니다</span></div>
       <div class="alert-filter-row" id="alertFilterRow">
-        <button class="af-btn on" data-d="10">10일</button>
-        <button class="af-btn"    data-d="15">15일</button>
-        <button class="af-btn"    data-d="30">30일</button>
+        <button class="af-btn on" data-d="30">30일 (기본)</button>
         <button class="af-btn"    data-d="custom">직접입력</button>
       </div>
       <div class="af-custom-wrap hide" id="afCustomWrap">
-        <input id="afCustomInput" type="number" min="1" max="999" placeholder="일 수 입력" inputmode="numeric">
+        <input id="afCustomInput" type="number" min="1" max="999" placeholder="기본 기준일 (일 수) 입력" inputmode="numeric">
         <button class="af-apply" id="afApply">적용</button>
       </div>
       <!-- 오늘할일 바로가기 -->
